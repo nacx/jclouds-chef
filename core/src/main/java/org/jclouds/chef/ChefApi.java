@@ -26,7 +26,6 @@ import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -36,7 +35,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.jclouds.Constants;
 import org.jclouds.Fallbacks.EmptySetOnNotFoundOr404;
-import org.jclouds.Fallbacks.FalseOnNotFoundOr404;
 import org.jclouds.Fallbacks.NullOnNotFoundOr404;
 import org.jclouds.Fallbacks.VoidOnNotFoundOr404;
 import org.jclouds.chef.binders.BindChecksumsToJsonPayload;
@@ -295,20 +293,6 @@ public interface ChefApi extends Closeable {
    Set<String> listClients();
 
    /**
-    * @return true if the specified client name exists.
-    * @throws AuthorizationException
-    *            <p/>
-    *            "401 Unauthorized" if you are not a recognized user.
-    *            <p/>
-    *            "403 Forbidden" if you do not have rights to view the client.
-    */
-   @Named("client:exists")
-   @HEAD
-   @Path("/clients/{clientname}")
-   @Fallback(FalseOnNotFoundOr404.class)
-   boolean clientExists(@PathParam("clientname") String clientname);
-
-   /**
     * deletes an existing client.
     * 
     * @return last state of the client you deleted or null, if not found
@@ -383,20 +367,6 @@ public interface ChefApi extends Closeable {
    @ResponseParser(ParseKeySetFromJson.class)
    @Fallback(EmptySetOnNotFoundOr404.class)
    Set<String> listNodes();
-
-   /**
-    * @return true if the specified node name exists.
-    * @throws AuthorizationException
-    *            <p/>
-    *            "401 Unauthorized" if you are not a recognized user.
-    *            <p/>
-    *            "403 Forbidden" if you do not have rights to view the node.
-    */
-   @Named("node:exists")
-   @HEAD
-   @Path("/nodes/{nodename}")
-   @Fallback(FalseOnNotFoundOr404.class)
-   boolean nodeExists(@PathParam("nodename") String nodename);
 
    /**
     * deletes an existing node.
@@ -474,20 +444,6 @@ public interface ChefApi extends Closeable {
    Set<String> listRoles();
 
    /**
-    * @return true if the specified role name exists.
-    * @throws AuthorizationException
-    *            <p/>
-    *            "401 Unauthorized" if you are not a recognized user.
-    *            <p/>
-    *            "403 Forbidden" if you do not have rights to view the role.
-    */
-   @Named("role:exists")
-   @HEAD
-   @Path("/roles/{rolename}")
-   @Fallback(FalseOnNotFoundOr404.class)
-   boolean roleExists(@PathParam("rolename") String rolename);
-
-   /**
     * deletes an existing role.
     * 
     * @return last state of the role you deleted or null, if not found
@@ -547,21 +503,6 @@ public interface ChefApi extends Closeable {
    @POST
    @Path("/data")
    void createDatabag(@BinderParam(BindNameToJsonPayload.class) String databagName);
-
-   /**
-    * true is a databag exists
-    * 
-    * @throws AuthorizationException
-    *            <p/>
-    *            "401 Unauthorized" if you are not a recognized user.
-    *            <p/>
-    *            "403 Forbidden" if you do not have view rights on the databag.
-    */
-   @Named("databag:exists")
-   @HEAD
-   @Path("/data/{name}")
-   @Fallback(FalseOnNotFoundOr404.class)
-   boolean databagExists(@PathParam("name") String databagName);
 
    /**
     * Delete a data bag, including its items
@@ -627,22 +568,6 @@ public interface ChefApi extends Closeable {
    DatabagItem updateDatabagItem(
          @PathParam("databagName") String databagName,
          @PathParam("databagItemId") @ParamParser(DatabagItemId.class) @BinderParam(BindToJsonPayload.class) DatabagItem item);
-
-   /**
-    * determines if a databag item exists
-    * 
-    * @throws AuthorizationException
-    *            <p/>
-    *            "401 Unauthorized" if you are not a recognized user.
-    *            <p/>
-    *            "403 Forbidden" if you do not have view rights on the databag.
-    */
-   @Named("databag:itemexists")
-   @HEAD
-   @Path("/data/{databagName}/{databagItemId}")
-   @Fallback(FalseOnNotFoundOr404.class)
-   boolean databagItemExists(@PathParam("databagName") String databagName,
-         @PathParam("databagItemId") String databagItemId);
 
    /**
     * gets an existing databag item.
