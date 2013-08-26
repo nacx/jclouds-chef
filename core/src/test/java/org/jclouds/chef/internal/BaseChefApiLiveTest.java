@@ -117,40 +117,29 @@ public abstract class BaseChefApiLiveTest<A extends ChefApi> extends BaseChefLiv
             .maintainerEmail("someone@jclouds.org") //
             .license("Apache 2.0") //
             .build();
-      
+
       // Create a new cookbook
       CookbookVersion cookbook = CookbookVersion.builder() //
             .cookbookName(PREFIX) //
             .version("0.0.0") //
-            .metadata(metadata)
-            .rootFile(Resource.builder().fromPayload(content).build()) //
+            .metadata(metadata).rootFile(Resource.builder().fromPayload(content).build()) //
             .build();
 
       // upload the cookbook to the remote server
       api.updateCookbook(PREFIX, "0.0.0", cookbook);
    }
 
-   @Test(dependsOnMethods = "testCreateNewCookbook")
    public void testListCookbooks() throws Exception {
       Set<String> cookbookNames = api.listCookbooks();
       assertFalse(cookbookNames.isEmpty());
 
       for (String cookbookName : cookbookNames) {
+         Set<String> versions = api.getVersionsOfCookbook(cookbookName);
+         assertFalse(versions.isEmpty());
+
          for (String version : api.getVersionsOfCookbook(cookbookName)) {
             CookbookVersion cookbook = api.getCookbook(cookbookName, version);
             assertNotNull(cookbook);
-            for (Resource resource : ImmutableList.<Resource> builder().addAll(cookbook.getDefinitions())
-                  .addAll(cookbook.getFiles()).addAll(cookbook.getLibraries()).addAll(cookbook.getSuppliers())
-                  .addAll(cookbook.getRecipes()).addAll(cookbook.getResources()).addAll(cookbook.getRootFiles())
-                  .addAll(cookbook.getTemplates()).build()) {
-               try {
-                  InputStream stream = api.getResourceContents(resource);
-                  byte[] md5 = asByteSource(stream).hash(md5()).asBytes();
-                  assertEquals(md5, resource.getChecksum());
-               } catch (NullPointerException e) {
-                  fail("resource not found: " + resource);
-               }
-            }
          }
       }
    }
@@ -159,6 +148,25 @@ public abstract class BaseChefApiLiveTest<A extends ChefApi> extends BaseChefLiv
    public void testListCookbookVersionsWithChefService() throws Exception {
       Iterable<? extends CookbookVersion> cookbooks = chefService.listCookbookVersions();
       assertFalse(isEmpty(cookbooks));
+   }
+
+   @Test(dependsOnMethods = "testListCookbookVersionsWithChefService")
+   public void testDownloadCookbooks() throws Exception {
+      Iterable<? extends CookbookVersion> cookbooks = chefService.listCookbookVersions();
+      for (CookbookVersion cookbook : cookbooks) {
+         for (Resource resource : ImmutableList.<Resource> builder().addAll(cookbook.getDefinitions())
+               .addAll(cookbook.getFiles()).addAll(cookbook.getLibraries()).addAll(cookbook.getSuppliers())
+               .addAll(cookbook.getRecipes()).addAll(cookbook.getResources()).addAll(cookbook.getRootFiles())
+               .addAll(cookbook.getTemplates()).build()) {
+            try {
+               InputStream stream = api.getResourceContents(resource);
+               byte[] md5 = asByteSource(stream).hash(md5()).asBytes();
+               assertEquals(md5, resource.getChecksum());
+            } catch (NullPointerException e) {
+               fail("resource not found: " + resource);
+            }
+         }
+      }
    }
 
    @Test(dependsOnMethods = "testCreateNewCookbook")

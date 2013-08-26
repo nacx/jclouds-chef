@@ -253,10 +253,11 @@ public class ChefParserModule extends AbstractModule {
             JsonReaderInternalAccess.INSTANCE.promoteNameToValue(in);
             K name = keyAdapter.read(in);
             V value = valueAdapter.read(in);
-            if (value != null)
+            if (value != null) {
                // If there are repeated keys, only keep the last one
                result.remove(name);
-            result.put(name, value);
+               result.put(name, value);
+            }
          }
          in.endObject();
          return ImmutableMap.copyOf(result);
