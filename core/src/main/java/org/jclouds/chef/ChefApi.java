@@ -84,6 +84,7 @@ import org.jclouds.rest.annotations.PayloadParam;
 import org.jclouds.rest.annotations.RequestFilters;
 import org.jclouds.rest.annotations.ResponseParser;
 import org.jclouds.rest.annotations.SinceApiVersion;
+import org.jclouds.rest.annotations.SkipEncoding;
 import org.jclouds.rest.binders.BindToJsonPayload;
 
 /**
@@ -778,6 +779,7 @@ public interface ChefApi extends Closeable {
    @Named("content:get")
    @GET
    @Fallback(NullOnNotFoundOr404.class)
+   @SkipEncoding({'+', ' ', '/', '=', ':', ';'})
    InputStream getResourceContents(@EndpointParam(parser = UriForResource.class) Resource resource);
 
    /**
