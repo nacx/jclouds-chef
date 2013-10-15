@@ -39,6 +39,7 @@ import org.jclouds.location.Provider;
 import org.jclouds.scriptbuilder.ExitInsteadOfReturn;
 import org.jclouds.scriptbuilder.domain.Statement;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -124,7 +125,8 @@ public class GroupToBootScript implements Function<String, Statement> {
             createValidationPem, createFirstBoot, runChef);
    }
 
-   private String createNodeConfiguration(BootstrapConfig config) {
+   @VisibleForTesting
+   String createNodeConfiguration(BootstrapConfig config) {
       StringBuilder json = new StringBuilder();
 
       if (config.getAttributes().isPresent()) {

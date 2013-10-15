@@ -82,7 +82,14 @@ public class GroupToBootScriptTest {
             bind(new TypeLiteral<Function<String, BootstrapConfig>>() {
             }).toInstance(Functions.<String, BootstrapConfig> forMap(ImmutableMap.<String, BootstrapConfig> of()));
          }
-      }, new ChefParserModule(), new GsonModule(), new ChefBootstrapModule());
+      }, new ChefParserModule(), new GsonModule(), new ChefBootstrapModule() {
+         @Override
+         protected void configure() {
+            bind(new TypeLiteral<Function<String, BootstrapConfig>>() {
+            }).toInstance(Functions.<String, BootstrapConfig> forMap(ImmutableMap.<String, BootstrapConfig> of()));
+            super.configure();
+         }
+      });
 
       Injector injectorOmnibus = Guice.createInjector(new AbstractModule() {
          @Override
@@ -91,10 +98,15 @@ public class GroupToBootScriptTest {
             bind(String.class).annotatedWith(Names.named(CHEF_UPDATE_GEM_SYSTEM)).toInstance("true");
             bind(String.class).annotatedWith(Names.named(CHEF_UPDATE_GEMS)).toInstance("true");
             bind(String.class).annotatedWith(Names.named(CHEF_USE_OMNIBUS)).toInstance("true");
+         }
+      }, new ChefParserModule(), new GsonModule(), new ChefBootstrapModule() {
+         @Override
+         protected void configure() {
             bind(new TypeLiteral<Function<String, BootstrapConfig>>() {
             }).toInstance(Functions.<String, BootstrapConfig> forMap(ImmutableMap.<String, BootstrapConfig> of()));
+            super.configure();
          }
-      }, new ChefParserModule(), new GsonModule(), new ChefBootstrapModule());
+      });
 
       installChefGems = injectorGems.getInstance(Key.get(Statement.class, InstallChef.class));
       installChefOmnibus = injectorOmnibus.getInstance(Key.get(Statement.class, InstallChef.class));

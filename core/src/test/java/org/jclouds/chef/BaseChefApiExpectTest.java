@@ -43,4 +43,5 @@ public abstract class BaseChefApiExpectTest<S> extends BaseRestApiExpectTest<S> 
    protected HttpRequest signed(HttpRequest input) {
       return signedHeaderAuth.filter(input);
    }
+
 }

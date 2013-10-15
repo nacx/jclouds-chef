@@ -26,6 +26,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.jclouds.chef.domain.BootstrapConfig;
+import org.jclouds.chef.functions.BootstrapConfigForGroup;
 import org.jclouds.scriptbuilder.domain.Statement;
 import org.jclouds.scriptbuilder.domain.StatementList;
 import org.jclouds.scriptbuilder.statements.chef.InstallChefGems;
@@ -39,6 +40,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
+import com.google.inject.TypeLiteral;
 
 /**
  * Provides bootstrap configuration for nodes.
@@ -46,6 +48,12 @@ import com.google.inject.Provides;
  * @author Ignasi Barrera
  */
 public class ChefBootstrapModule extends AbstractModule {
+
+   @Override
+   protected void configure() {
+      bind(new TypeLiteral<Function<String, BootstrapConfig>>() {
+      }).to(BootstrapConfigForGroup.class);
+   }
 
    @Provides
    @Named("installChefGems")
@@ -79,7 +87,8 @@ public class ChefBootstrapModule extends AbstractModule {
 
    @Provides
    @Singleton
-   CacheLoader<String, BootstrapConfig> bootstrapConfigForGroup(Function<String, BootstrapConfig> bootstrapConfigForGroup) {
+   CacheLoader<String, BootstrapConfig> bootstrapConfigForGroup(
+         Function<String, BootstrapConfig> bootstrapConfigForGroup) {
       return CacheLoader.from(bootstrapConfigForGroup);
    }
 
@@ -126,7 +135,4 @@ public class ChefBootstrapModule extends AbstractModule {
       }
    }
 
-   @Override
-   protected void configure() {
-   }
 }
