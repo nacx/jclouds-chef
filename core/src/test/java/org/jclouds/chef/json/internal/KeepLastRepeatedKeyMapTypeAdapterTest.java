@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jclouds.chef.config;
+package org.jclouds.chef.json.internal;
 
 import static com.google.common.base.Objects.equal;
 import static org.testng.Assert.assertEquals;
@@ -22,7 +22,6 @@ import static org.testng.Assert.assertEquals;
 import java.lang.reflect.Type;
 import java.util.Map;
 
-import org.jclouds.chef.config.ChefParserModule.KeepLastRepeatedKeyMapTypeAdapterFactory;
 import org.testng.annotations.Test;
 
 import com.google.common.base.Objects;
@@ -32,12 +31,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
- * Unit tests for the {@link ChefParserModule} class.
+ * Unit tests for the {@link KeepLastRepeatedKeyMapTypeAdapter} class.
  * 
  * @author Ignasi Barrera
  */
-@Test(groups = "unit", testName = "ChefParserModuleTest")
-public class ChefParserModuleTest {
+@Test(groups = "unit", testName = "KeepLastRepeatedKeyMapTypeAdapterTest")
+public class KeepLastRepeatedKeyMapTypeAdapterTest {
 
    private static class KeyValue {
       private final String key;
@@ -64,7 +63,7 @@ public class ChefParserModuleTest {
       }
    }
 
-   private Gson map = new GsonBuilder().registerTypeAdapterFactory(new KeepLastRepeatedKeyMapTypeAdapterFactory())
+   private Gson map = new GsonBuilder().registerTypeAdapterFactory(new KeepLastRepeatedKeyMapTypeAdapter.Factory())
          .create();
    private Type mapType = new TypeToken<Map<String, String>>() {
       private static final long serialVersionUID = 1L;

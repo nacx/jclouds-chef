@@ -18,7 +18,6 @@ package org.jclouds.chef;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 import org.jclouds.chef.config.ChefProperties;
 import org.jclouds.chef.domain.BootstrapConfig;
@@ -28,7 +27,6 @@ import org.jclouds.chef.domain.Environment;
 import org.jclouds.chef.domain.Node;
 import org.jclouds.chef.internal.BaseChefService;
 import org.jclouds.chef.util.ChefUtils;
-import org.jclouds.domain.JsonBall;
 import org.jclouds.ohai.config.OhaiModule;
 import org.jclouds.rest.annotations.SinceApiVersion;
 import org.jclouds.scriptbuilder.domain.Statement;
@@ -94,23 +92,12 @@ public interface ChefService {
    void updateBootstrapConfigForGroup(String group, BootstrapConfig bootstrapConfig);
 
    /**
-    * Gets the run list for the given group.
-    * 
-    * @param The group to get the configured run list for.
-    * @return run list for all nodes bootstrapped with a certain group
-    */
-   List<String> getRunListForGroup(String group);
-
-   /**
     * Gets the bootstrap configuration for a given group.
-    * <p>
-    * The bootstrap configuration is a Json object containing the run list and
-    * the configured attributes.
     * 
     * @param group The name of the group.
     * @return The bootstrap configuration for the given group.
     */
-   public JsonBall getBootstrapConfigForGroup(String group);
+   public BootstrapConfig getBootstrapConfigForGroup(String group);
 
    // Nodes / Clients
 

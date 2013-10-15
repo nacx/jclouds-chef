@@ -25,6 +25,7 @@ import static org.jclouds.chef.config.ChefProperties.CHEF_VERSION;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.jclouds.chef.domain.BootstrapConfig;
 import org.jclouds.scriptbuilder.domain.Statement;
 import org.jclouds.scriptbuilder.domain.StatementList;
 import org.jclouds.scriptbuilder.statements.chef.InstallChefGems;
@@ -32,7 +33,9 @@ import org.jclouds.scriptbuilder.statements.chef.InstallChefUsingOmnibus;
 import org.jclouds.scriptbuilder.statements.ruby.InstallRuby;
 import org.jclouds.scriptbuilder.statements.ruby.InstallRubyGems;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.cache.CacheLoader;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
@@ -72,6 +75,12 @@ public class ChefBootstrapModule extends AbstractModule {
    Statement installChef(BootstrapProperties bootstrapProperties, @Named("installChefGems") Statement installChefGems,
          @Named("installChefOmnibus") Statement installChefOmnibus) {
       return bootstrapProperties.useOmnibus() ? installChefOmnibus : installChefGems;
+   }
+
+   @Provides
+   @Singleton
+   CacheLoader<String, BootstrapConfig> bootstrapConfigForGroup(Function<String, BootstrapConfig> bootstrapConfigForGroup) {
+      return CacheLoader.from(bootstrapConfigForGroup);
    }
 
    @Singleton

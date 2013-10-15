@@ -21,7 +21,6 @@ import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
-import java.util.List;
 
 import javax.inject.Singleton;
 
@@ -30,14 +29,11 @@ import org.jclouds.blobstore.TransientApiMetadata;
 import org.jclouds.blobstore.config.LocalBlobStore;
 import org.jclouds.chef.ChefApi;
 import org.jclouds.chef.config.Validator;
-import org.jclouds.chef.domain.Client;
+import org.jclouds.chef.domain.BootstrapConfig;
 import org.jclouds.chef.functions.BootstrapConfigForGroup;
-import org.jclouds.chef.functions.ClientForGroup;
-import org.jclouds.chef.functions.RunListForGroup;
 import org.jclouds.chef.test.TransientChefApi;
 import org.jclouds.concurrent.config.ExecutorServiceModule;
 import org.jclouds.crypto.Crypto;
-import org.jclouds.domain.JsonBall;
 import org.jclouds.rest.ConfiguresHttpApi;
 import org.jclouds.rest.config.RestModule;
 import org.jclouds.rest.config.SyncToAsyncHttpInvocationModule;
@@ -86,20 +82,8 @@ public class TransientChefApiModule extends AbstractModule {
 
    @Provides
    @Singleton
-   CacheLoader<String, List<String>> runListForGroup(RunListForGroup runListForGroup) {
-      return CacheLoader.from(runListForGroup);
-   }
-
-   @Provides
-   @Singleton
-   CacheLoader<String, ? extends JsonBall> bootstrapConfigForGroup(BootstrapConfigForGroup bootstrapConfigForGroup) {
+   CacheLoader<String, BootstrapConfig> bootstrapConfigForGroup(BootstrapConfigForGroup bootstrapConfigForGroup) {
       return CacheLoader.from(bootstrapConfigForGroup);
-   }
-
-   @Provides
-   @Singleton
-   CacheLoader<String, Client> groupToClient(ClientForGroup clientForGroup) {
-      return CacheLoader.from(clientForGroup);
    }
 
    @Provides

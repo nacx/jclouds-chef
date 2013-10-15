@@ -22,8 +22,6 @@ import static org.jclouds.chef.config.ChefProperties.CHEF_BOOTSTRAP_DATABAG;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.PrivateKey;
-import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -42,18 +40,16 @@ import org.jclouds.chef.domain.Environment;
 import org.jclouds.chef.domain.Node;
 import org.jclouds.chef.functions.BootstrapConfigForGroup;
 import org.jclouds.chef.functions.GroupToBootScript;
-import org.jclouds.chef.functions.RunListForGroup;
 import org.jclouds.chef.strategy.CleanupStaleNodesAndClients;
 import org.jclouds.chef.strategy.CreateNodeAndPopulateAutomaticAttributes;
 import org.jclouds.chef.strategy.DeleteAllClientsInList;
 import org.jclouds.chef.strategy.DeleteAllNodesInList;
 import org.jclouds.chef.strategy.ListClients;
 import org.jclouds.chef.strategy.ListCookbookVersions;
-import org.jclouds.chef.strategy.ListNodesInEnvironment;
 import org.jclouds.chef.strategy.ListEnvironments;
 import org.jclouds.chef.strategy.ListNodes;
+import org.jclouds.chef.strategy.ListNodesInEnvironment;
 import org.jclouds.chef.strategy.UpdateAutomaticAttributesOnNode;
-import org.jclouds.domain.JsonBall;
 import org.jclouds.io.Payloads;
 import org.jclouds.io.payloads.RSADecryptingPayload;
 import org.jclouds.io.payloads.RSAEncryptingPayload;
@@ -61,14 +57,13 @@ import org.jclouds.json.Json;
 import org.jclouds.logging.Logger;
 import org.jclouds.scriptbuilder.domain.Statement;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
-import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.InputSupplier;
 
 /**
  * @author Adrian Cole
+ * @author Ignasi Barrera
  */
 @Singleton
 public class BaseChefService implements ChefService {
@@ -86,7 +81,6 @@ public class BaseChefService implements ChefService {
    private final GroupToBootScript groupToBootScript;
    private final String databag;
    private final BootstrapConfigForGroup bootstrapConfigForGroup;
-   private final RunListForGroup runListForGroup;
    private final ListCookbookVersions listCookbookVersions;
    private final ListEnvironments listEnvironments;
    private final ListNodesInEnvironment listNodesInEnvironment;
@@ -103,8 +97,8 @@ public class BaseChefService implements ChefService {
          ListClients listClients, ListCookbookVersions listCookbookVersions,
          UpdateAutomaticAttributesOnNode updateAutomaticAttributesOnNode, Supplier<PrivateKey> privateKey,
          @Named(CHEF_BOOTSTRAP_DATABAG) String databag, GroupToBootScript groupToBootScript,
-         BootstrapConfigForGroup bootstrapConfigForGroup, RunListForGroup runListForGroup,
-         ListEnvironments listEnvironments, ListNodesInEnvironment listNodesInEnvironment, Json json) {
+         BootstrapConfigForGroup bootstrapConfigForGroup, ListEnvironments listEnvironments,
+         ListNodesInEnvironment listNodesInEnvironment, Json json) {
       this.chefContext = checkNotNull(chefContext, "chefContext");
       this.api = checkNotNull(api, "api");
       this.cleanupStaleNodesAndClients = checkNotNull(cleanupStaleNodesAndClients, "cleanupStaleNodesAndClients");
@@ -121,7 +115,6 @@ public class BaseChefService implements ChefService {
       this.groupToBootScript = checkNotNull(groupToBootScript, "groupToBootScript");
       this.databag = checkNotNull(databag, "databag");
       this.bootstrapConfigForGroup = checkNotNull(bootstrapConfigForGroup, "bootstrapConfigForGroup");
-      this.runListForGroup = checkNotNull(runListForGroup, "runListForGroup");
       this.listEnvironments = checkNotNull(listEnvironments, "listEnvironments");
       this.listNodesInEnvironment = checkNotNull(listNodesInEnvironment, "listNodesInEnvironment");
       this.json = checkNotNull(json, "json");
@@ -144,26 +137,6 @@ public class BaseChefService implements ChefService {
             .get()));
    }
 
-   @VisibleForTesting
-   String buildBootstrapConfiguration(BootstrapConfig bootstrapConfig) {
-      checkNotNull(bootstrapConfig, "bootstrapConfig must not be null");
-
-      Map<String, Object> configMap = Maps.newHashMap();
-      configMap.put("run_list", bootstrapConfig.getRunList());
-
-      if (bootstrapConfig.getEnvironment().isPresent()) {
-         configMap.put("environment", bootstrapConfig.getEnvironment().get());
-      }
-
-      if (bootstrapConfig.getAttribtues().isPresent()) {
-         Map<String, Object> attributes = json.fromJson(bootstrapConfig.getAttribtues().get().toString(),
-               BootstrapConfigForGroup.BOOTSTRAP_CONFIG_TYPE);
-         configMap.putAll(attributes);
-      }
-
-      return json.toJson(configMap);
-   }
-
    @Override
    public Statement createBootstrapScriptForGroup(String group) {
       return groupToBootScript.apply(group);
@@ -177,8 +150,7 @@ public class BaseChefService implements ChefService {
 
       }
 
-      String jsonConfig = buildBootstrapConfiguration(bootstrapConfig);
-      DatabagItem runlist = new DatabagItem(group, jsonConfig);
+      DatabagItem runlist = new DatabagItem(group, json.toJson(bootstrapConfig));
 
       if (api.getDatabagItem(databag, group) == null) {
          api.createDatabagItem(databag, runlist);
@@ -188,12 +160,7 @@ public class BaseChefService implements ChefService {
    }
 
    @Override
-   public List<String> getRunListForGroup(String group) {
-      return runListForGroup.apply(group);
-   }
-
-   @Override
-   public JsonBall getBootstrapConfigForGroup(String group) {
+   public BootstrapConfig getBootstrapConfigForGroup(String group) {
       return bootstrapConfigForGroup.apply(group);
    }
 
